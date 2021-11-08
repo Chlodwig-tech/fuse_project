@@ -5,6 +5,6 @@ typedef struct DIRECTORY_{
     char *name;
     char *path;
     struct DIRECTORY_ *parent;
-};
+}Directory;
 
 #endif // DIRECTORY_H
