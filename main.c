@@ -5,8 +5,9 @@
 
 int main(int argc,char *argv[]){
 
+    Directory *root=tree_init();
 
-    printf("Hello World!");
+    printf("Hello World!\n");
 
     return 0;
 }
