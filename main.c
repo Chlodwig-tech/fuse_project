@@ -6,9 +6,15 @@
 
 int main(int argc,char *argv[]){
 
-    Directory *root=tree_init();
+    root=tree_init();
+    current_dir=root;
 
-    printf("Starting fuse...\n");
+    Directory *dir1=directory_init("d1");
+    tree_append_dir(root,dir1);
+    Directory *dir=directory_init("d2");
+    tree_append_dir(root,dir);
+    Directory *dir2=directory_init("d3");
+    tree_append_dir(root,dir2);
 
-    return fuse_main(argc,argv,&operations);
+    return fuse_main(argc,argv,&operations,NULL);
 }

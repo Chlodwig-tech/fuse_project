@@ -9,4 +9,11 @@ typedef struct FILE_H{
     Directory *parent;
 }File;
 
+File* file_init(char *name){
+    File *f=(File*)malloc(sizeof(File));
+    f->name=(char*)malloc(strlen(name)+1);
+    strcpy(f->name,name);
+    return f;
+}
+
 #endif // FILE_H
