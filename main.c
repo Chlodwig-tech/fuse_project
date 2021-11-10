@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tree/tree.h"
+#include "fuse_functions.h"
+
 
 int main(int argc,char *argv[]){
 
     Directory *root=tree_init();
 
-    printf("Hello World!\n");
+    printf("Starting fuse...\n");
 
-    return 0;
+    return fuse_main(argc,argv,&operations);
 }
