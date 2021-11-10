@@ -7,7 +7,6 @@
 int main(int argc,char *argv[]){
 
     root=tree_init();
-    current_dir=root;
 
     Directory *dir1=directory_init("d1");
     tree_append_dir(root,dir1);
