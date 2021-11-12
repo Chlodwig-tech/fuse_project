@@ -13,7 +13,7 @@ int main(int argc,char *argv[]){
     Directory *dir=directory_init("d2");
     tree_append_dir(root,dir);
     Directory *dir2=directory_init("d3");
-    tree_append_dir(root,dir2);
+    tree_append_dir(dir1,dir2);
 
     return fuse_main(argc,argv,&operations,NULL);
 }

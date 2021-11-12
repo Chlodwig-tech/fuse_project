@@ -11,7 +11,10 @@
 
 #include "tree/tree.h"
 
-char* get_parent_directory(char* path){
+char* get_parent_directory(const char* path){
+    if(strcmp(path,"/")==0){
+        return "/";
+    }
     char *parent=NULL;
     int parentLen;
     char* last=strrchr(path, '/');
@@ -20,13 +23,31 @@ char* get_parent_directory(char* path){
         parent=(char*)malloc(parentLen);
         strncpy(parent,path,parentLen);
     }
+
     return parent;
+}
+
+char* get_name(const char *path){
+    if(strcmp(path,"/")==0){
+        return NULL;
+    }
+    char *name=NULL;
+    char *last=strrchr(path,'/');
+    if(last!=NULL){
+        int l=strlen(last);
+        name=(char*)malloc(l);
+        strncpy(name,last,l);
+    }
+
+    return ++name;
 }
 
 Directory *root;
 
 // (path)path to the file, (st)structure filled with the file's attributes
 int getattr_function(const char *path,struct stat *st){
+
+    printf("[getattr] function called [%s]\n",path);
 
     st->st_uid=getuid(); // owner of the file
     st->st_gid=getgid(); // owner group of the file
@@ -45,9 +66,6 @@ int getattr_function(const char *path,struct stat *st){
         return -ENOENT;
     }
 
-    //printf("[getattr] function called\n");
-    //printf("\tAttributes of %s requested\n",path);
-
     return 0;
 }
 
@@ -55,19 +73,17 @@ int getattr_function(const char *path,struct stat *st){
 // (filler) function from fuse that allowed to fill the buffr with available files in path
 int readdir_function(const char *path,void *buffer,fuse_fill_dir_t filler,off_t offset,struct fuse_file_info *fi){
     
+    printf("[readdir] function called [%s]\n",path);
+
     filler(buffer,".",NULL,0); // curent directory
     filler(buffer,"..",NULL,0); // parent directory
 
-    for(list_element *helper=root->directories.first;helper!=NULL;helper=helper->next){
+    Directory *c_dir=tree_get_dir(root,path);
+
+    for(list_element *helper=c_dir->directories.first;helper!=NULL;helper=helper->next){
         Directory *dir=(Directory*)helper->data;
         filler(buffer,dir->name,NULL,0);
     }
-
-    /*Directory *dir=tree_get_dir(current_dir,path);
-    current_dir=dir==NULL ? current_dir:dir;
-    printf("%s  %s\n",path,current_dir->path);*/
-
-    //printf("[readdir] function called\n");
 
     return 0;
 }
@@ -75,11 +91,17 @@ int readdir_function(const char *path,void *buffer,fuse_fill_dir_t filler,off_t 
 // (path)path to the new directory, (mode)specifies permission birs
 static int do_mkdir( const char *path, mode_t mode ){
     
-    path++;
-    printf("mkdir: %s\n",path);
-    Directory *dir=directory_init(path);
-    tree_append_dir(root,dir);
+    printf("[mkdir] function called [%s]\n",path);
 
+    Directory *c_dir=tree_get_dir(root,get_parent_directory(path)); 
+
+    if(c_dir==NULL){
+        printf("[mkdir] NULL c_dir\n");
+        return 0;
+    }
+
+    tree_append_dir(c_dir,directory_init(get_name(++path)));
+    
 	return 0;
 }
 
