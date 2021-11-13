@@ -44,7 +44,7 @@ void list_pop(list *l){
     }
 }
 
-void *list_get_data(list *l,int index){
+list_element* list_get(list *l,int index){
     if(index<0 || index>=l->size){
         return NULL;
     }
@@ -52,7 +52,44 @@ void *list_get_data(list *l,int index){
     for(int i=0;i<index;i++){
         helper=helper->next;
     }
-    return helper->data;
+    return helper;
+}
+
+list_element* list_get_by_data(list *l,void *data){
+    for(list_element *helper=l->first;helper!=NULL;helper=helper->next){
+        if(helper->data==data){
+            return helper;
+        }
+    }
+    return NULL;
+}
+
+void list_remove(list *l,void *data){
+    list_element *helper=list_get_by_data(l,data);
+    if(helper==NULL){
+        return;
+    }
+
+    if(helper->previous!=NULL){
+        helper->previous->next=helper->next;
+    }else{
+        l->first=helper->next;    
+    }
+
+    if(helper->next!=NULL){
+        helper->next->previous=helper->previous;
+    }else{
+        l->last=helper->previous;
+    }
+
+    l->size--;
+}
+
+void list_delete(list *l){
+    int s=l->size;
+    for(int i=0;i<s;i++){
+        list_pop(l);
+    }
 }
 
 #endif // LIST_H
