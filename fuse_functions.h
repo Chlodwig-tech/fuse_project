@@ -139,13 +139,37 @@ int write_function(const char *path,const char *buffer,size_t size,off_t offset,
     return size;
 }
 
+// (path)path to thr file
+int rmdir_function(const char *path){
+
+    printf("[rmdir] function called [%s]\n",path);
+
+    Directory *c_dir=tree_get_dir(root,get_parent_directory(path));
+
+    if(c_dir==NULL){
+        printf("[rmdir] NULL c_dir\n");
+        return 0;
+    }
+
+    Directory *dir_to_rm=tree_get_dir(root,path);
+
+    if(dir_to_rm==root){
+        return 0;
+    }
+
+    tree_remove_directory(dir_to_rm);
+
+    return  0;
+}
+
 static struct fuse_operations operations={
     .getattr=getattr_function,
     .readdir =readdir_function,
     .read=read_function,
     .mkdir=mkdir_function,
     .mknod=mknod_function,
-    .write=write_function
+    .write=write_function,
+    .rmdir=rmdir_function
 };
 
 #endif // FUSE_FUNCTIONS_H
