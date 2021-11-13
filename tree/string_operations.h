@@ -2,6 +2,7 @@
 #define STRING_OPERATIONS_H
 
 char* get_parent_directory(const char* path){
+    
     if(strcmp(path,"/")==0){
         return "/";
     }
@@ -13,6 +14,7 @@ char* get_parent_directory(const char* path){
         parentLen=strlen(path)-strlen(last);
         parent=(char*)malloc(parentLen);
         strncpy(parent,path,parentLen);
+        parent[parentLen]='\0';
     }
 
     if(strcmp(parent,"")==0){

@@ -106,19 +106,22 @@ void tree_remove_file(File *f){
 }
 
 void tree_remove_directory_recusrsive(Directory *dir){
+
     while(dir->directories.size!=0){
-        Directory *d=(Directory*)dir->directories.last;
+        Directory *d=(Directory*)dir->directories.last->data;
         list_pop(&dir->directories);
         tree_remove_directory_recusrsive(d);
     }
+
     while(dir->files.size!=0){
-        File *f=(File*)dir->files.last;
+        File *f=(File*)dir->files.last->data;
         list_pop(&dir->files);
         tree_remove_file(f);
     }
     
     free(dir->name);
     free(dir->path);
+    printf("removing directory [%s]\n",dir->path);
     free(dir);
 }
 
@@ -126,6 +129,9 @@ void tree_remove_directory(Directory *dir){
     list_remove(&dir->parent->directories,(void*)dir);
     tree_remove_directory_recusrsive(dir);
 }
+
+
+
 
 void file_print(File *f){
     printf("{F}: name: %s, path: %s\n",f->name,f->path);
