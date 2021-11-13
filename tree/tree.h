@@ -98,36 +98,42 @@ File* tree_get_file(Directory *dir,const char *path){
     return NULL;
 }
 
-void tree_remove_file(File *f){
+void tree_remove_file_rec(File *f){
+    printf("removing file [%s]\n",f->path);
     free(f->path);
     free(f->name);
     free(f->content);
     free(f);
 }
 
-void tree_remove_directory_recusrsive(Directory *dir){
+void tree_remove_file(File *f){
+    list_remove(&f->parent->files,(void*)f);
+    tree_remove_file_rec(f);
+}
+
+void tree_remove_directory_recursive(Directory *dir){
 
     while(dir->directories.size!=0){
         Directory *d=(Directory*)dir->directories.last->data;
         list_pop(&dir->directories);
-        tree_remove_directory_recusrsive(d);
+        tree_remove_directory_recursive(d);
     }
 
     while(dir->files.size!=0){
         File *f=(File*)dir->files.last->data;
         list_pop(&dir->files);
-        tree_remove_file(f);
+        tree_remove_file_rec(f);
     }
     
+    printf("removing directory [%s]\n",dir->path);
     free(dir->name);
     free(dir->path);
-    printf("removing directory [%s]\n",dir->path);
     free(dir);
 }
 
 void tree_remove_directory(Directory *dir){
     list_remove(&dir->parent->directories,(void*)dir);
-    tree_remove_directory_recusrsive(dir);
+    tree_remove_directory_recursive(dir);
 }
 
 

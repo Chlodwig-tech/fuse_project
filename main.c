@@ -20,7 +20,9 @@ int main(int argc,char *argv[]){
     tree_append_dir(root,dir4);
 
     File *f1=file_init("f1.txt");
-    f1->content="xd\n";
+    char *content="xd\n";
+    f1->content=(char*)malloc(strlen(content));
+    strcpy(f1->content,content);
     tree_append_file(root,f1);
 
     return fuse_main(argc,argv,&operations,NULL);

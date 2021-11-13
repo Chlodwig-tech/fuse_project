@@ -24,15 +24,17 @@ int getattr_function(const char *path,struct stat *st){
     st->st_mtime=time(NULL); // last modification time
 
     //st_mode -> is file, directory?
-    if(strcmp(path,"/")==0 || tree_is_dir(root,path)==1){
-        st->st_mode=S_IFDIR | 0755; // directory
-        st->st_nlink=2;
-    }else if(tree_is_file(root,path)==1){
-        st->st_mode=S_IFREG | 0644; // regular file
-        st->st_nlink=1;
-        st->st_size=1024;
-    }else{
-        return -ENOENT;
+    if(strcmp(path,"/.Trash")!=0 && strcmp(path,"/.Trash-1000")!=0 && strcmp(path,"/.xdg-volume-info")!=0 && strcmp(path,"/autorun.inf")!=0){
+        if(strcmp(path,"/")==0 || tree_is_dir(root,path)==1){
+            st->st_mode=S_IFDIR | 0755; // directory
+            st->st_nlink=2;
+        }else if(tree_is_file(root,path)==1){
+            st->st_mode=S_IFREG | 0644; // regular file
+            st->st_nlink=1;
+            st->st_size=1024;
+        }else{
+            return -ENOENT;
+        }
     }
 
     return 0;
@@ -144,16 +146,9 @@ int rmdir_function(const char *path){
 
     printf("[rmdir] function called [%s]\n",path);
 
-    Directory *c_dir=tree_get_dir(root,get_parent_directory(path));
-
-    if(c_dir==NULL){
-        printf("[rmdir] NULL c_dir\n");
-        return 0;
-    }
-
     Directory *dir_to_rm=tree_get_dir(root,path);
 
-    if(dir_to_rm==root){
+    if(dir_to_rm==NULL || dir_to_rm==root){
         return 0;
     }
 
@@ -162,14 +157,31 @@ int rmdir_function(const char *path){
     return  0;
 }
 
+int unlink_function(const char *path){
+    
+    printf("[unlink] function called [%s]\n",path);
+    
+    File *file_to_rm=tree_get_file(root,path);
+
+    if(file_to_rm==NULL){
+        return 0;
+    }
+
+    tree_remove_file(file_to_rm);
+    
+    return 0;
+}
+
 static struct fuse_operations operations={
-    .getattr=getattr_function,
-    .readdir =readdir_function,
-    .read=read_function,
-    .mkdir=mkdir_function,
-    .mknod=mknod_function,
-    .write=write_function,
-    .rmdir=rmdir_function
+    .getattr=getattr_function,            // getting file's attributes
+    .readdir =readdir_function,           // reading directory
+    .read=read_function,                  // reading file
+    .mkdir=mkdir_function,                // making directory
+    .mknod=mknod_function,                // making file (i.e. text editor)
+    //.create                             // making file (i.e. touch)
+    .write=write_function,                // writing file
+    .rmdir=rmdir_function,                // removing directory
+    .unlink=unlink_function               //
 };
 
 #endif // FUSE_FUNCTIONS_H
