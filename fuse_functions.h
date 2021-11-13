@@ -54,11 +54,33 @@ int readdir_function(const char *path,void *buffer,fuse_fill_dir_t filler,off_t 
         filler(buffer,dir->name,NULL,0);
     }
 
+    for(list_element *helper=c_dir->files.first;helper!=NULL;helper=helper->next){
+        File *file=(File*)helper->data;
+        filler(buffer,file->name,NULL,0);
+    }
+
     return 0;
 }
 
-// (path)path to the new directory, (mode)specifies permission birs
-static int do_mkdir( const char *path, mode_t mode ){
+// (path)path of the file, (buffer)pointer to file's content portion, (size)size of file's content portion
+// (offset)place in the file's content where is starting reading from, (fi) file info
+int read_function(const char *path,char *buffer,size_t size,off_t offset,struct fuse_file_info *fi){
+    
+    printf("[read] function called [%s]\n",path);
+    
+    File *file=tree_get_file(root,path);
+    
+    if(file==NULL){
+        return -1;
+    }
+
+    memcpy(buffer,file->content+offset,size);
+    
+    return strlen(file->content)-offset;
+}
+
+// (path)path to the new directory, (mode)specifies permission bits and type
+int mkdir_function( const char *path, mode_t mode ){
     
     printf("[mkdir] function called [%s]\n",path);
 
@@ -78,10 +100,52 @@ static int do_mkdir( const char *path, mode_t mode ){
 	return 0;
 }
 
+// (path)path to the new file, (mode)specifies permission bits and type, (rdev)specifies if the new file is a device file
+int mknod_function(const char *path,mode_t mode,dev_t rdev){
+    
+    printf("[mknod] function called [%s]\n",path);
+
+    Directory *c_dir=tree_get_dir(root,get_parent_directory(path));
+
+    if(c_dir==NULL){
+        printf("[mknod] NULL c_dir\n");
+        return 0;
+    }
+
+    if(c_dir==root){
+        tree_append_file(c_dir,file_init(get_name(path)));
+    }else{
+        tree_append_file(c_dir,file_init(get_name(++path)));
+    }
+
+    return 0;
+}
+
+// (path)path to the file, (buffer)pointer to content wanted to be written into file, (size)size of file's content portion,
+// // (offset)place in the file's content where is starting writing from, (fi) file info
+int write_function(const char *path,const char *buffer,size_t size,off_t offset,struct fuse_file_info *fi){
+
+    printf("[write] function called [%s]\n",path);
+
+    File *file=tree_get_file(root,path);
+
+    if(file==NULL){
+        return -1;
+    }
+
+    file->content=(char*)malloc(strlen(buffer));
+    strcpy(file->content,buffer);
+
+    return size;
+}
+
 static struct fuse_operations operations={
     .getattr=getattr_function,
     .readdir =readdir_function,
-    .mkdir=do_mkdir
+    .read=read_function,
+    .mkdir=mkdir_function,
+    .mknod=mknod_function,
+    .write=write_function
 };
 
 #endif // FUSE_FUNCTIONS_H

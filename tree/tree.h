@@ -81,6 +81,23 @@ Directory* tree_get_dir(Directory *dir,const char *path){
     return NULL;
 }
 
+File* tree_get_file(Directory *dir,const char *path){
+    for(list_element *helper=dir->files.first;helper!=NULL;helper=helper->next){
+        File *f=(File*)helper->data;
+        if(strcmp(f->path,path)==0){
+            return f;
+        }
+    }
+    for(list_element *helper=dir->directories.first;helper!=NULL;helper=helper->next){
+        Directory *d=(Directory*)helper->data;
+        File *f=tree_get_file(d,path);
+        if(f!=NULL){
+            return f;
+        }
+    }
+    return NULL;
+}
+
 void file_print(File *f){
     printf("{F}: name: %s, path: %s\n",f->name,f->path);
 }
