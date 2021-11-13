@@ -4,6 +4,7 @@
 #include <string.h>
 #include "directory.h"
 #include "file.h"
+#include "string_operations.h"
 
 Directory *tree_init(){
     Directory *root=(Directory*)malloc(sizeof(Directory));

@@ -11,37 +11,6 @@
 
 #include "tree/tree.h"
 
-char* get_parent_directory(const char* path){
-    if(strcmp(path,"/")==0){
-        return "/";
-    }
-    char *parent=NULL;
-    int parentLen;
-    char* last=strrchr(path, '/');
-    if (last!=NULL) {
-        parentLen=strlen(path)-strlen(last);
-        parent=(char*)malloc(parentLen);
-        strncpy(parent,path,parentLen);
-    }
-
-    return parent;
-}
-
-char* get_name(const char *path){
-    if(strcmp(path,"/")==0){
-        return NULL;
-    }
-    char *name=NULL;
-    char *last=strrchr(path,'/');
-    if(last!=NULL){
-        int l=strlen(last);
-        name=(char*)malloc(l);
-        strncpy(name,last,l);
-    }
-
-    return ++name;
-}
-
 Directory *root;
 
 // (path)path to the file, (st)structure filled with the file's attributes
@@ -93,15 +62,19 @@ static int do_mkdir( const char *path, mode_t mode ){
     
     printf("[mkdir] function called [%s]\n",path);
 
-    Directory *c_dir=tree_get_dir(root,get_parent_directory(path)); 
-
+    Directory *c_dir=tree_get_dir(root,get_parent_directory(path));
+    
     if(c_dir==NULL){
         printf("[mkdir] NULL c_dir\n");
         return 0;
     }
 
-    tree_append_dir(c_dir,directory_init(get_name(++path)));
-    
+    if(c_dir==root){
+        tree_append_dir(c_dir,directory_init(get_name(path)));    
+    }else{
+        tree_append_dir(c_dir,directory_init(get_name(++path)));
+    }
+
 	return 0;
 }
 
