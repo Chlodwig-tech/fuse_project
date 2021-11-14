@@ -9,6 +9,7 @@ typedef struct DIRECTORY_{
     struct DIRECTORY_ *parent;
     list directories;
     list files;
+    struct stat *st;
 }Directory;
 
 Directory* directory_init(const char *name){
@@ -17,6 +18,13 @@ Directory* directory_init(const char *name){
     strcpy(dir->name,name);
     list_init(&dir->directories);
     list_init(&dir->files);
+    dir->st=(struct stat*)malloc(sizeof(struct stat));
+    dir->st->st_uid=getuid();
+    dir->st->st_gid=getgid();
+    dir->st->st_atime=time(NULL);
+    dir->st->st_mtime=time(NULL);
+    dir->st->st_mode=S_IFDIR | 0755; // directory;
+    dir->st->st_nlink=2;
     return dir;
 }
 

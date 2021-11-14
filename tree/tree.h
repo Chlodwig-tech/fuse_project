@@ -13,6 +13,13 @@ Directory *tree_init(){
     root->path="/";
     list_init(&root->directories);
     list_init(&root->files);
+    root->st=(struct stat*)malloc(sizeof(struct stat));
+    root->st->st_uid=getuid();
+    root->st->st_gid=getgid();
+    root->st->st_atime=time(NULL);
+    root->st->st_mtime=time(NULL);
+    root->st->st_mode=S_IFDIR | 0755; // directory;
+    root->st->st_nlink=2;
     return root;
 }
 
