@@ -171,7 +171,7 @@ int rmdir_function(const char *path){
     return  0;
 }
 
-// (path)path to thr file
+// (path)path to the file
 int unlink_function(const char *path){
     
     printf("[unlink] function called [%s]\n",path);
