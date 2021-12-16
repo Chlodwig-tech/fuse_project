@@ -3,7 +3,7 @@
 
 #include "directory.h"
 
-typedef struct FILE_H{
+typedef struct FILE_{
     char *name;
     char *path;
     char *content;
@@ -26,5 +26,25 @@ File* file_init(char *name){
     f->st->st_size=1024;
     return f;
 }
+/*
+void encrypt_file(File *f,unsigned char *key,unsigned char *iv){
+    char *plaintext=f->content;
+    char *cipher_text=(char*)malloc(strlen(plaintext));
+    unsigned char tag[16];
+    unsigned char aad[] = "AAD";
+    
+    f->st->st_size=encrypt(plaintext,aad,key,iv,cipher_text,tag);
+    f->content=cipher_text;
+}
 
+void decrypt_file(File *f,unsigned char *key,unsigned char *iv){
+    char *cipher_text=f->content;
+    char *plaintext=(char*)malloc(strlen(cipher_text));
+    unsigned char tag[16];
+    unsigned char aad[] = "AAD";
+
+    f->st->st_size=decrypt(cipher_text,f->st->st_size,aad,tag,key,iv,plaintext);
+    f->content=plaintext;
+}
+*/
 #endif // FILE_H

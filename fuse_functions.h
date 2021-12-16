@@ -41,7 +41,6 @@ int getattr_function(const char *path,struct stat *st){
             return -ENOENT;
         }
     }
-
     return 0;
 }
 

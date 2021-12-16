@@ -2,9 +2,14 @@
 #define TREE_H
 
 #include <string.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "directory.h"
 #include "file.h"
 #include "string_operations.h"
+#include "rsa.h"
 
 Directory *tree_init(){
     Directory *root=(Directory*)malloc(sizeof(Directory));
@@ -46,13 +51,15 @@ void tree_append_file(Directory *parent,File *file_to_append){
 }
 
 int tree_is_dir(Directory *dir,const char *path){
-    for(list_element *helper=dir->directories.first;helper!=NULL;helper=helper->next){
-        Directory *directory=(Directory*)helper->data;
-        if(strcmp(directory->path,path)==0){
-            return 1;
-        }
-        if(tree_is_dir(directory,path)==1){
-            return 1;
+    if(strncmp(dir->path,path,strlen(dir->path))==0){
+        for(list_element *helper=dir->directories.first;helper!=NULL;helper=helper->next){
+            Directory *directory=(Directory*)helper->data;
+            if(strcmp(directory->path,path)==0){
+                return 1;
+            }
+            if(tree_is_dir(directory,path)==1){
+                return 1;
+            }
         }
     }
     return 0;
@@ -144,8 +151,6 @@ void tree_remove_directory(Directory *dir){
 }
 
 
-
-
 void file_print(File *f){
     printf("{F}: name: %s, path: %s\n",f->name,f->path);
 }
@@ -171,6 +176,64 @@ void directory_print(Directory *dir,int depth){
 }
 void tree_directory_print(Directory *dir){
     directory_print(dir,1);
+}
+
+void tree_add_directory_from_argv(const char *path,Directory *parent,char *privateKey){
+    
+
+    struct dirent *dp;
+    DIR *dir=opendir(path);
+
+    if(!dir){
+        return;
+    }   
+
+    while((dp=readdir(dir))!=NULL){
+        
+        if(strcmp(dp->d_name,".")!=0 && strcmp(dp->d_name,"..")!=0){
+            char *child_path=(char*)malloc(sizeof(path)+1+(sizeof(dp->d_name)));
+            strcpy(child_path,path);
+            strcat(child_path,"/");
+            strcat(child_path,dp->d_name);
+            if(dp->d_type==4){
+                Directory *directory=directory_init(dp->d_name);
+                tree_append_dir(parent,directory);
+                tree_add_directory_from_argv(child_path,directory,privateKey);
+            }else if(dp->d_type==8){
+                File *file=file_init(dp->d_name);
+                char *path_to_file=malloc(strlen(path)+strlen(dp->d_name)+1);
+                strcpy(path_to_file,path);
+                strcat(path_to_file,"/");
+                strcat(path_to_file,dp->d_name);
+
+                char *string=decrypt(privateKey,path_to_file);
+                file->content=string;
+                file->st->st_size=strlen(string);
+                tree_append_file(parent,file);
+                
+                //char *string=decrypt("keys/private.txt",)
+                /*FILE *f;
+                f=fopen(child_path,"r");
+
+                fseek(f, 0, SEEK_END);
+                long fsize = ftell(f);
+                printf("%s %ld:\n",child_path,fsize);
+                fseek(f, 0, SEEK_SET);
+
+                char *string = malloc(fsize + 1);
+                fread(string, 1, fsize, f);
+                fclose(f);
+                */
+
+                //string[fsize] = 0;
+                //file->content=string;
+                //file->st->st_size=fsize;
+                
+            }
+        }
+            
+    }
+    closedir(dir);
 }
 
 #endif // TREE_H

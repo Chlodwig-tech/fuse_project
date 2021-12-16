@@ -1,7 +1,7 @@
 all: compile execute
 
 compile:
-	gcc main.c -o main `pkg-config fuse --cflags --libs`
+	gcc -lcrypto main.c -o main `pkg-config fuse --cflags --libs`
 
 execute:
-	./main -f mount
+	./main -c tree/do_args/ -f mount

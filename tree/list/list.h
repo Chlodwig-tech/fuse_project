@@ -19,6 +19,8 @@ void list_append(list *l,void *data){
     if(l->first==NULL){
         l->first=l->last=(list_element*)malloc(sizeof(list_element));
         l->first->data=data;
+        l->first->next=NULL;
+        l->first->previous=NULL;
     }else{
         list_element *helper=(list_element*)malloc(sizeof(list_element));
         helper->data=data;
