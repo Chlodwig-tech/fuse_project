@@ -188,6 +188,18 @@ int unlink_function(const char *path){
     return 0;
 }
 
+
+// function called at the end
+int destroy_function(void *private_data){
+
+    printf("[destroy]function called\n");
+
+    save(path_dest,root);
+    tree_remove_directory_recursive(root);
+    return 0;
+}
+
+
 static struct fuse_operations operations={
     .getattr=getattr_function,            // getting file's attributes
     .readdir =readdir_function,           // reading directory
@@ -197,7 +209,8 @@ static struct fuse_operations operations={
     //.create                             // making file (i.e. touch)
     .write=write_function,                // writing file
     .rmdir=rmdir_function,                // removing directory
-    .unlink=unlink_function               //
+    .unlink=unlink_function,              // removing file
+    .destroy=destroy_function             // called on filesystem exit
 };
 
 #endif // FUSE_FUNCTIONS_H

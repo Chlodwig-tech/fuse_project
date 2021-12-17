@@ -5,15 +5,23 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "directory.h"
 #include "file.h"
 #include "string_operations.h"
 #include "rsa.h"
 
-Directory *tree_init(){
+char *public_key_path;
+char *path_dest;
+
+Directory *tree_init(char *public_key,char *pd){
+    public_key_path=public_key;
+    path_dest=pd;
     Directory *root=(Directory*)malloc(sizeof(Directory));
     root->parent=NULL;
+    root->name=(char*)malloc(strlen("/")+1);
     root->name="/";
     root->path="/";
     list_init(&root->directories);
@@ -138,10 +146,13 @@ void tree_remove_directory_recursive(Directory *dir){
         list_pop(&dir->files);
         tree_remove_file_rec(f);
     }
-    
+
     printf("removing directory [%s]\n",dir->path);
-    free(dir->name);
-    free(dir->path);
+
+    if(strcmp(dir->name,"/")!=0){
+        free(dir->name);
+        free(dir->path);
+    }
     free(dir);
 }
 
@@ -234,6 +245,26 @@ void tree_add_directory_from_argv(const char *path,Directory *parent,char *priva
             
     }
     closedir(dir);
+}
+
+void save(char *path,Directory *dir){
+    struct stat st={0};
+    mkdir(path,0700);
+    for(list_element *helper=dir->files.first;helper!=NULL;helper=helper->next){
+        File *f=(File*)helper->data;
+        char *destination=malloc(strlen(path)+strlen(f->path));
+        strcpy(destination,path);
+        strcat(destination,"/");
+        strcat(destination,f->name);
+        encrypt(f->content,public_key_path,destination);
+    }
+    for(list_element *helper=dir->directories.first;helper!=NULL;helper=helper->next){
+        Directory *d=(Directory*)helper->data;
+        char *destination=malloc(strlen(path)+strlen(d->path));
+        strncpy(destination,path,strlen(path)-1);
+        strcat(destination,d->path);
+        save(destination,d);
+    }
 }
 
 #endif // TREE_H
